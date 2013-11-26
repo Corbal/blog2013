@@ -9,7 +9,7 @@
 function depurar($data)
 {
 	$data = trim($data); // Elimina espacios al principio y final.
-	$data = stripslashes($data); // Elimina las barras de escape
+	//$data = stripslashes($data); // Elimina las barras de escape
 	$data = htmlspecialchars($data); // Convierte los caracteres HTML a su literal correspondiente.
 	return $data;
 }
@@ -49,12 +49,12 @@ if ( $_SERVER['REQUEST_METHOD'] == "POST" ) // estamos recibiendo datos por POST
 	}
 
 	// El nombre = que nickname y máximo 20 caracteres.
-	if ( !preg_match('/^[a-zA-Z0-9_\-]{4,20}$/', $_POST['name']) )
+	if ( !preg_match('/^[a-zA-Z0-9_\- ]{4,20}$/', $_POST['name']) )
 	{
 		$errores[] = 'The name should have maximum 20 chars. No special characters allowed.';
 	}
 	// Los apellidos = que nickname y máximo 100 caracteres.
-	if ( !preg_match('/^[a-zA-Z0-9_\-]{4,100}$/', $_POST['surname']) )
+	if ( !preg_match('/^[a-zA-Z0-9_\- ]{4,100}$/', $_POST['surname']) )
 	{
 		$errores[] = 'The surname should have maximum 100 chars. No special characters allowed.';
 	}
@@ -62,7 +62,7 @@ if ( $_SERVER['REQUEST_METHOD'] == "POST" ) // estamos recibiendo datos por POST
 	// La contraseña debe contener de 6 a 15 caracteres (cualquier tipo de caracter), al menos 1 letra minúscula, 1 Mayúscula, al menos 1 número
 	// Check your expressions at: http://www.phpliveregex.com/
 	
-	if( !preg_match('#[(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])]{6,15}#'))
+
 	
 	
 	
@@ -88,7 +88,25 @@ if ( $_SERVER['REQUEST_METHOD'] == "POST" ) // estamos recibiendo datos por POST
 	  echo "</pre>";
 	 */
 	// </editor-fold>
+
+	// Comprobamos si hay errores o no, y si está todo OK insertamos en la tabla.
+	if (count($errores)==0)
+	{
+		// Insertamos en la tabla.
+		// Preparamos la SQL.
+		$sql=sprintf("insert into users(nickname,name,surname,password,email,birthday,datecreated,ipaddress,privilege) values('%s','%s','%s','%s','%s','%s','%s','%s','%d')",$_POST['nickname'],$_POST['name'],$_POST['surname'],encriptar($_POST['password']),$_POST['email'],cambiaf_mysql($_POST['birthday']),time(),$_SERVER['REMOTE_ADDR'],1);
+		
+		echo $sql;
+		
+		// Ejecutamos la consulta.
+		mysql_query($sql,$conexion) or die(mysql_error());
+		
+		// Mostramos mensaje
+		echo "Datos insertados correctamente";
+	}
 }
+if(count($errores!=0) || empty($_POST))  // Mostramos el formulario.
+{
 ?>
 <form class="formulario" action="" method="post" autocomplete="off">
 	<ul>
@@ -117,7 +135,7 @@ if ( $_SERVER['REQUEST_METHOD'] == "POST" ) // estamos recibiendo datos por POST
 		</li>
 		<li>
 			<label for="birthday">Birthday:</label>
-			<input type="text" name="birthday" id="birthday" />
+			<input type="date" name="birthday" id="birthday" />
 		</li>
 		<!--- ESTA SECCIÓN SE UTILIZARÁ PARA VALIDAR EN CLASE DE DWEC --->
 
@@ -132,3 +150,6 @@ if ( $_SERVER['REQUEST_METHOD'] == "POST" ) // estamos recibiendo datos por POST
 		</li>
 	</ul>
 </form>
+<?php
+}
+?>
